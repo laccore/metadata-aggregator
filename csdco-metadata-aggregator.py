@@ -64,13 +64,13 @@ def aggregate_metadata(infile, outfile, **kwargs):
         e = r[7]
         expeditions.add(e)
 
-        c = r[17]
-        s = r[18]
+        c = r[17].replace(',','')
+        s = r[18].replace(',','')
         f = r[5].replace(',','')
         p = r[20].split(', ')
 
         if e in debug_projects:
-            print('expedition: {}\ncountry: {}\nstate: {}\nfeatures: {}\npis: {}\n'.format(e,c,s,f,p))
+            print('expedition: {}\ncountry: {}\nstate: {}\nfeature name: {}\npis: {}\n'.format(e,c,s,f,p))
         
         if e not in countries:
             countries[e] = [c]
