@@ -79,16 +79,14 @@ for r in rdata:
         pis[e] += p
 
 
-# Cleanup and stuff
+# Cleanup and deduplicate
 empty = {'', 'n/a', 'N/A'}
-for c in countries:
-    countries[c] = list(set(countries[c])-empty)
-for s in states:
-    states[s] = list(set(states[s])-empty)
-for f in featureNames:
-    featureNames[f] = list(set(featureNames[f])-empty)
-for p in pis:
-    pis[p] = list(set(pis[p])-empty)
+for e in expeditions:
+    countries[e] = list(set(countries[e])-empty)
+    states[e] = list(set(states[e])-empty)
+    featureNames[e] = list(set(featureNames[e])-empty)
+    pis[e] = list(set(pis[e])-empty)
+
 
 
 with open(outfile, 'w', encoding='utf-8-sig') as f:
@@ -100,6 +98,7 @@ with open(outfile, 'w', encoding='utf-8-sig') as f:
         i = ','.join(pis[e])
 
         f.write('\"' + e + '\",\"' + l + '\",\"' + nf + '\",\"' + i + '\"\n')
+
 
 print('{0} projects found.'.format(len(expeditions)))
 print('Aggregated data written to {0}.'.format(outfile))
