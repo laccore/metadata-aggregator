@@ -11,10 +11,10 @@ PI              20
 
 Spreadsheet Name	Excel Name
 ----------------	-----------------
-ProjectID		    Expedition
-Location			Country,State_Province
-Named features	    Location
-Investigator		PI
+PROJECT ID		    Expedition
+LOCATION			Country,State_Province
+NAMED FEATURE	    Location
+INVESTIGATOR		PI
 '''
 
 import sys
@@ -24,7 +24,7 @@ import datetime
 
 start_time = timeit.default_timer()
 
-debug_projects = ['17ARC']
+debug_projects = []
 
 infile = sys.argv[1]
 if len(sys.argv) > 2:
@@ -65,7 +65,7 @@ for r in rdata:
     p = r[20].split(', ')
 
     if e in debug_projects:
-        print(c,s,f,p)
+        print('expedition: {}\ncountry: {}\nstate: {}\nfeatures: {}\npis: {}\n'.format(e,c,s,f,p))
     
     if e not in countries:
         countries[e] = [c]
@@ -102,7 +102,7 @@ with open(outfile, 'w', encoding='utf-8-sig') as f:
         f.write('\"' + e + '\",\"' + l + '\",\"' + nf + '\",\"' + i + '\"\n')
 
 print('{0} projects found.'.format(len(expeditions)))
-print('Aggregated data written to file \'{0}\'.'.format(outfile))
+print('Aggregated data written to {0}.'.format(outfile))
 
 end_time = timeit.default_timer()
 print('Completed in {0} seconds.'.format(round(end_time-start_time,2)))
