@@ -25,7 +25,20 @@ import datetime
 start_time = timeit.default_timer()
 
 
-def aggregate_metadata(infile, outfile, exclude_projects, debug_projects):
+# def aggregate_metadata(infile, outfile, exclude_projects, debug_projects):
+def aggregate_metadata(infile, outfile, **kwargs):
+    if 'exclude_projects' in kwargs:
+        exclude_projects = kwargs['exclude_projects']
+        print('Found exclude_projects:',exclude_projects)
+    else:
+        exclude_projects = []
+
+    if 'debug_projects' in kwargs:
+        debug_projects = kwargs['debug_projects']
+        print('Found debug_projects:',debug_projects)
+    else:
+        debug_projects = []
+    
     with open(infile, 'r', encoding='utf-8-sig') as f:
         rawdata = f.read().splitlines()
 
@@ -101,7 +114,7 @@ def aggregate_metadata(infile, outfile, exclude_projects, debug_projects):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2 or len(sys.argv) > 3:
-        print('ERROR: invalid parameters')
+        print('ERROR: invalid parameters.')
         exit(1)
     
     infile = sys.argv[1]
@@ -112,9 +125,11 @@ if __name__ == '__main__':
         outfile = 'project_data_' + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.csv'
 
     # projects to exclude from export, e.g., ocean drilling projects
+    # TODO: allow passing of list via command line
     exlcude_projects = ['AT15','ORCA','B0405','B0506']
         
     # print troubleshooting info
+    # TODO: allow passing of list via command line    
     debug_projects = []
 
-    aggregate_metadata(infile, outfile, exlcude_projects, debug_projects)
+    aggregate_metadata(infile, outfile, exclude_projects=exlcude_projects, debug_projects=debug_projects)
