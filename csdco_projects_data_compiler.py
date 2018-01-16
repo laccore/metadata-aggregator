@@ -24,6 +24,8 @@ import datetime
 
 start_time = timeit.default_timer()
 
+debug_projects = ['17ARC']
+
 infile = sys.argv[1]
 if len(sys.argv) > 2:
     outfile = sys.argv[2]
@@ -35,16 +37,16 @@ with open(infile, 'r', encoding='utf-8-sig') as f:
 
 data = []
 
+# The Excel file often exports a huge amount of empty rows of varying number of columns. This ignores those.
 for r in rawdata:
     if r.replace(',','') != '':
         data += [r]
 
+data = data[1:]     # ignore hearder
 rdata = []
 
 for r in csv.reader(data, quotechar='"', delimiter=','):
     rdata += [r[:32]]
-
-rdata = rdata[1:]
 
 expeditions = set()
 countries = {}
@@ -54,13 +56,16 @@ pis = {}
 
 
 for r in rdata:
-    e = r[7].replace(',','')
+    e = r[7]
     expeditions.add(e)
 
     c = r[17]
     s = r[18]
     f = r[5].replace(',','')
     p = r[20].split(', ')
+
+    if e in debug_projects:
+        print(c,s,f,p)
     
     if e not in countries:
         countries[e] = [c]
@@ -86,7 +91,7 @@ for p in pis:
     pis[p] = list(set(pis[p])-empty)
 
 
-with open(outfile, 'w') as f:
+with open(outfile, 'w', encoding='utf-8-sig') as f:
     f.write('\"PROJECT ID\",\"LOCATION\",\"NAMED FEATURE\",\"INVESTIGATOR\"\n')
 
     for e in sorted(expeditions):
@@ -96,8 +101,8 @@ with open(outfile, 'w') as f:
 
         f.write('\"' + e + '\",\"' + l + '\",\"' + nf + '\",\"' + i + '\"\n')
 
-print('{0} projects identified.'.format(len(expeditions)))
-print('Combined data written to {0}.'.format(outfile))
+print('{0} projects found.'.format(len(expeditions)))
+print('Aggregated data written to file \'{0}\'.'.format(outfile))
 
 end_time = timeit.default_timer()
 print('Completed in {0} seconds.'.format(round(end_time-start_time,2)))
