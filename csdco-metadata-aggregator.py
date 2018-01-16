@@ -1,5 +1,12 @@
 
 '''
+This script takes as input a CSV export of our LacCore_Holes_YYYYMMDD.xlsx file and 
+combines locations (country and state), feature names, and PIs by project code, with
+some general data cleanup along the way. It then exports all that as a csv.
+
+The exported csv can then be imported into Drupal, which updates the project and map
+databases on our website.
+
 Field           Column Number
 -------------   -------------
 Expedition      7
@@ -103,7 +110,9 @@ def aggregate_metadata(infile, outfile, **kwargs):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2 or len(sys.argv) > 3:
-        print('ERROR: invalid parameters.')
+        print('ERROR: invalid parameters. Exiting.')
+        print('Usage (e.g.): python csdco-metadata-aggregator.py LacCore_Holes_20180116.csv')
+        print('              python csdco-metadata-aggregator.py LacCore_Holes_20180116.csv project_list_for_website.csv')
         exit(1)
     
     infile = sys.argv[1]
