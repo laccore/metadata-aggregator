@@ -29,13 +29,11 @@ start_time = timeit.default_timer()
 def aggregate_metadata(infile, outfile, **kwargs):
     if 'exclude_projects' in kwargs:
         exclude_projects = kwargs['exclude_projects']
-        print('Found exclude_projects:',exclude_projects)
     else:
         exclude_projects = []
 
     if 'debug_projects' in kwargs:
         debug_projects = kwargs['debug_projects']
-        print('Found debug_projects:',debug_projects)
     else:
         debug_projects = []
     
