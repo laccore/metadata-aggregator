@@ -25,7 +25,6 @@ import datetime
 start_time = timeit.default_timer()
 
 
-# def aggregate_metadata(infile, outfile, exclude_projects, debug_projects):
 def aggregate_metadata(infile, outfile, **kwargs):
     if 'exclude_projects' in kwargs:
         exclude_projects = kwargs['exclude_projects']
@@ -40,23 +39,15 @@ def aggregate_metadata(infile, outfile, **kwargs):
     with open(infile, 'r', encoding='utf-8-sig') as f:
         rawdata = f.read().splitlines()
 
-    data = []
-
     # The Excel file often exports a huge amount of empty rows of varying number of columns. This ignores those.
-    for r in rawdata:
-        if r.replace(',','') != '':
-            data += [r]
+    data = [r for r in rawdata[1:] if r.replace(',','') != '']
 
-    data = data[1:]     # ignore hearder
-    rdata = []
-
-    for r in csv.reader(data, quotechar='"', delimiter=','):
-        rdata += [r[:32]]
+    rdata = [r[:32] for r in csv.reader(data, quotechar='"', delimiter=',')]
 
     expeditions = set()
     countries = {}
     states = {}
-    featureNames = {}
+    feature_names = {}
     pis = {}
 
 
@@ -75,12 +66,12 @@ def aggregate_metadata(infile, outfile, **kwargs):
         if e not in countries:
             countries[e] = [c]
             states[e] = [s]
-            featureNames[e] = [f]
+            feature_names[e] = [f]
             pis[e] = p
         else:
             countries[e] += [c]
             states[e] += [s]
-            featureNames[e] += [f]
+            feature_names[e] += [f]
             pis[e] += p
 
 
@@ -89,7 +80,7 @@ def aggregate_metadata(infile, outfile, **kwargs):
     for e in expeditions:
         countries[e] = list(set(countries[e])-empty)
         states[e] = list(set(states[e])-empty)
-        featureNames[e] = list(set(featureNames[e])-empty)
+        feature_names[e] = list(set(feature_names[e])-empty)
         pis[e] = list(set(pis[e])-empty)
 
 
@@ -98,7 +89,7 @@ def aggregate_metadata(infile, outfile, **kwargs):
 
         for e in sorted(expeditions-set(exlcude_projects)):
             l = ','.join(sorted(countries[e])+sorted(states[e]))
-            nf = ','.join(sorted(featureNames[e]))
+            nf = ','.join(sorted(feature_names[e]))
             i = ','.join(pis[e])
 
             f.write('\"' + e + '\",\"' + l + '\",\"' + nf + '\",\"' + i + '\"\n')
