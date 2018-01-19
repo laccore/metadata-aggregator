@@ -22,6 +22,10 @@ PROJECT ID		    Expedition
 LOCATION			Country,State_Province
 NAMED FEATURE	    Location
 INVESTIGATOR		PI
+
+TODO:
+* Allow entry of a starting row, i.e., all data at and beyond which is new and only handle that data.
+* Build GUI
 '''
 
 import sys
@@ -83,12 +87,13 @@ def aggregate_metadata(infile, outfile, **kwargs):
 
 
     # Cleanup and deduplicate
-    empty = {'', 'n/a', 'N/A'}
+    empty = {'', 'n/a', 'N/A', ' '}
     for e in expeditions:
         countries[e] = list(set(countries[e])-empty)
         states[e] = list(set(states[e])-empty)
         feature_names[e] = list(set(feature_names[e])-empty)
-        pis[e] = list(set(pis[e])-empty)
+        seen_pis = set()
+        pis[e] = [pi for pi in pis[e] if not (pi in seen_pis or seen_pis.add(pi) or pi in empty)]
 
 
     with open(outfile, 'w', encoding='utf-8-sig') as f:
