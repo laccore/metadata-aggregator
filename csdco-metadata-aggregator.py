@@ -101,7 +101,7 @@ def aggregate_metadata(infile, outfile, **kwargs):
     with open(outfile, 'w', encoding='utf-8-sig') as f:
         f.write('\"PROJECT ID\",\"LOCATION\",\"NAMED FEATURE\",\"INVESTIGATOR\"\n')
 
-        for e in sorted(expeditions-set(exlcude_projects)):
+        for e in sorted(expeditions-set(exclude_projects)):
             l = ','.join(sorted(countries[e])+sorted(states[e]))
             nf = ','.join(sorted(feature_names[e]))
             i = ','.join(pis[e])
@@ -109,7 +109,7 @@ def aggregate_metadata(infile, outfile, **kwargs):
             f.write('\"' + e + '\",\"' + l + '\",\"' + nf + '\",\"' + i + '\"\n')
 
 
-    print('{0} projects found.'.format(len(expeditions-set(exlcude_projects))))
+    print('{0} projects found.'.format(len(expeditions-set(exclude_projects))))
     print('Aggregated data written to {0}.'.format(outfile))
 
     end_time = timeit.default_timer()
