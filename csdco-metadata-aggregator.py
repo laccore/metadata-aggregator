@@ -35,8 +35,6 @@ def aggregate_metadata(infile, outfile, **kwargs):
   else:
     debug_projects = []
 
-
-
   conn = sqlite3.connect(infile)
   c = conn.cursor()
 
@@ -50,21 +48,23 @@ def aggregate_metadata(infile, outfile, **kwargs):
     [e, c, s, f, p] = r
     expeditions.add(e)
 
-    c = c.replace(',','') if c else None
-    s = s.replace(',','') if s else None
-    f = f.replace(',','') if f else None
-    p = p.split(', ') if p else None
+    if c is not None:
+      c = c.replace(',','')
+      countries[e].add(c)
+    if s is not None:
+      s = s.replace(',','')
+      states[e].add(s)
+    if f is not None:
+      f = f.replace(',','')
+      feature_names[e].add(f)
+    if p is not None:
+      for pi in p.split(', '):
+        if pi not in pis[e]:
+          pis[e].append(pi)
 
     if e in debug_projects:
       print('expedition: {}\ncountry: {}\nstate: {}\nfeature name: {}\npis: {}\n'.format(e,c,s,f,p))
-    
-    c and countries[e].add(c)
-    s and states[e].add(s)
-    f and feature_names[e].add(f)
-    if p:
-      for pi in p:
-        if pi not in pis[e]:
-          pis[e].append(pi)
+
 
   with open(outfile, 'w', encoding='utf-8-sig') as f:
     f.write('\"PROJECT ID\",\"LOCATION\",\"NAMED FEATURE\",\"INVESTIGATOR\"\n')
