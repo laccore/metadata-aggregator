@@ -16,16 +16,18 @@ State_Province  18
 PI              20
 
 
-Spreadsheet Name	Excel Name
-----------------	-----------------
-PROJECT ID		    Expedition
-LOCATION			Country,State_Province
-NAMED FEATURE	    Location
-INVESTIGATOR		PI
+Spreadsheet Name  Excel Name
+----------------  -----------------
+PROJECT ID        Expedition
+LOCATION          Country,State_Province
+NAMED FEATURE     Location
+INVESTIGATOR      PI
 
 TODO:
 * Allow entry of a starting row, i.e., all data at and beyond which is new and only handle that data.
 * Build GUI
+* Use argparse
+* use numpy to handle Excel?
 '''
 
 import sys
@@ -125,14 +127,14 @@ if __name__ == '__main__':
     if len(sys.argv) > 2:
         outfile = sys.argv[2]
     else:
-        outfile = 'project_data_' + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.csv'
+        outfile = 'project_data_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
 
     # projects to exclude from export, e.g., ocean drilling projects
     # TODO: allow passing of list via command line
-    exlcude_projects = ['AT15','ORCA','B0405','B0506']
+    exclude_projects = ['AT15','ORCA','B0405','B0506','SBB']
         
     # print troubleshooting info
     # TODO: allow passing of list via command line    
     debug_projects = []
 
-    aggregate_metadata(infile, outfile, exclude_projects=exlcude_projects, debug_projects=debug_projects)
+    aggregate_metadata(infile, outfile, exclude_projects=exclude_projects, debug_projects=debug_projects)
