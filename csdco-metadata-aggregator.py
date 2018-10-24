@@ -14,9 +14,8 @@ NAMED FEATURE     Location
 INVESTIGATOR      PI
 
 TODO:
-* Allow entry of a starting row, i.e., all data at and beyond which is new and only handle that data.
 * Build GUI
-* Use argparse
+* Command line passing of excluded projects and debug projects
 '''
 
 import timeit
@@ -83,32 +82,22 @@ def aggregate_metadata(infile, outfile, **kwargs):
 
 
 if __name__ == '__main__':
-    #     print('ERROR: invalid parameters. Exiting.')
-    #     print('Usage (e.g.): python csdco-metadata-aggregator.py CSDCO.sqlite3')
-    #     print('              python csdco-metadata-aggregator.py CSDCO.sqlite3 project_list_for_website.csv')
-    #     exit(1)
-    
-
-    # else:
-    #     outfile = 'project_data_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
     parser = argparse.ArgumentParser(description='Aggregate fields from the CSDCO database by Expedition Drupal for publishing.')
     parser.add_argument('db_file', type=str, help='Name of CSDCO database file.')
     parser.add_argument('-f', type=str, help='Filename for export.')
     args = parser.parse_args()
 
     if not os.path.isfile(args.db_file):
-      print('ERROR: database file \'{}\' does not exist.\n'.format(args.db_file))
-      exit(1)
+        print('ERROR: database file \'{}\' does not exist.\n'.format(args.db_file))
+        exit(1)
 
     # Use filename if provided, else create using datetimestamp
     outfile = args.f if args.f else 'project_data_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
 
-    # projects to exclude from export, e.g., ocean drilling projects
-    # TODO: allow passing of list via command line
+    # List of projects to exclude from export, e.g., ocean drilling projects
     exclude_projects = ['AT15','ORCA','B0405','B0506','SBB']
         
-    # print troubleshooting info
-    # TODO: allow passing of list via command line    
+    # List of projects to print info on for troubleshooting
     debug_projects = []
 
     start_time = timeit.default_timer()
