@@ -35,7 +35,7 @@ def aggregate_metadata(database, outfile, **kwargs):
     debug_projects = []
 
   conn = sqlite3.connect(database)
-  c = conn.cursor()
+  cur = conn.cursor()
 
   expeditions = set()
   countries = collections.defaultdict(set)
@@ -43,7 +43,7 @@ def aggregate_metadata(database, outfile, **kwargs):
   feature_names = collections.defaultdict(set)
   pis = collections.defaultdict(list)
 
-  for r in c.execute("SELECT Expedition, Country, State_Province, Location, PI FROM boreholes"):
+  for r in cur.execute("SELECT Expedition, Country, State_Province, Location, PI FROM boreholes"):
     [e, c, s, f, p] = r
     expeditions.add(e)
 
@@ -63,7 +63,10 @@ def aggregate_metadata(database, outfile, **kwargs):
 
     if e in debug_projects:
       print('Expedition: {}\nCountry: {}\nState: {}\nFeature Name: {}\nPIs: {}\n'.format(e,c,s,f,p))
-
+  
+  project_data = {}
+  for r in cur.execute("SELECT Expedition, Full_Name, Funding, Technique, Discipline, Link_Title, Link_URL, Lab, Repository, Status, Start_Date, Outreach FROM projects"):
+    project_data[r[0]] = r[1:]
 
   with open(outfile, 'w', encoding='utf-8-sig') as f:
     f.write('\"PROJECT ID\",\"LOCATION\",\"NAMED FEATURE\",\"INVESTIGATOR\"\n')
