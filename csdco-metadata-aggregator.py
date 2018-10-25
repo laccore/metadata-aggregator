@@ -2,15 +2,14 @@
 This script takes as input the CSDCO sqlite database and combines locations (country and state),
 feature names, and PIs by project code, and then exports all that as a csv.
 
-The exported csv can then be imported into Drupal, which updates the project and map
-databases on our website.
+The exported csv can then be imported into Drupal, which updates the project db on our website.
 
-Spreadsheet Name  Database Columns
-----------------  -----------------
-PROJECT ID        Expedition
-LOCATION          Country,State_Province
-NAMED FEATURE     Location
-INVESTIGATOR      PI
+Export CSV Name     Database Columns
+---------------     -----------------
+PROJECT ID          Expedition
+LOCATION            Country,State_Province
+NAMED FEATURE       Location
+INVESTIGATOR        PI
 
 TODO:
 * Build GUI
@@ -24,7 +23,7 @@ import collections
 import argparse
 import os
 
-def aggregate_metadata(infile, outfile, **kwargs):
+def aggregate_metadata(database, outfile, **kwargs):
   if 'exclude_projects' in kwargs:
     exclude_projects = kwargs['exclude_projects']
   else:
@@ -35,7 +34,7 @@ def aggregate_metadata(infile, outfile, **kwargs):
   else:
     debug_projects = []
 
-  conn = sqlite3.connect(infile)
+  conn = sqlite3.connect(database)
   c = conn.cursor()
 
   expeditions = set()
@@ -63,7 +62,7 @@ def aggregate_metadata(infile, outfile, **kwargs):
           pis[e].append(pi)
 
     if e in debug_projects:
-      print('expedition: {}\ncountry: {}\nstate: {}\nfeature name: {}\npis: {}\n'.format(e,c,s,f,p))
+      print('Expedition: {}\nCountry: {}\nState: {}\nFeature Name: {}\nPIs: {}\n'.format(e,c,s,f,p))
 
 
   with open(outfile, 'w', encoding='utf-8-sig') as f:
@@ -76,12 +75,12 @@ def aggregate_metadata(infile, outfile, **kwargs):
 
       f.write('\"' + e + '\",\"' + l + '\",\"' + nf + '\",\"' + i + '\"\n')
 
-  print('{0} projects found.'.format(len(expeditions-set(exclude_projects))))
-  print('Aggregated data written to {0}.'.format(outfile))
+  print('{} projects found.'.format(len(expeditions-set(exclude_projects))))
+  print('Aggregated data written to {}.'.format(outfile))
 
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser(description='Aggregate fields from the CSDCO database by Expedition Drupal for publishing.')
+  parser = argparse.ArgumentParser(description='Aggregate fields from the CSDCO database by Expedition for import on our Drupal website.')
   parser.add_argument('db_file', type=str, help='Name of CSDCO database file.')
   parser.add_argument('-f', type=str, help='Filename for export.')
   args = parser.parse_args()
