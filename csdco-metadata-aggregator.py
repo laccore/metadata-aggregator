@@ -22,6 +22,7 @@ import sqlite3
 import collections
 import argparse
 import os
+import csv
 
 def aggregate_metadata(database, outfile, **kwargs):
   if 'exclude_projects' in kwargs:
@@ -35,7 +36,7 @@ def aggregate_metadata(database, outfile, **kwargs):
     debug_projects = []
 
   conn = sqlite3.connect(database)
-  c = conn.cursor()
+  cur = conn.cursor()
 
   expeditions = set()
   countries = collections.defaultdict(set)
@@ -43,7 +44,7 @@ def aggregate_metadata(database, outfile, **kwargs):
   feature_names = collections.defaultdict(set)
   pis = collections.defaultdict(list)
 
-  for r in c.execute("SELECT Expedition, Country, State_Province, Location, PI FROM boreholes"):
+  for r in cur.execute("SELECT Expedition, Country, State_Province, Location, PI FROM boreholes"):
     [e, c, s, f, p] = r
     expeditions.add(e)
 
@@ -63,17 +64,33 @@ def aggregate_metadata(database, outfile, **kwargs):
 
     if e in debug_projects:
       print('Expedition: {}\nCountry: {}\nState: {}\nFeature Name: {}\nPIs: {}\n'.format(e,c,s,f,p))
-
+  
+  project_metadata = {}
+  query_columns = ['Expedition', 'Full_Name', 'Funding', 'Technique', 'Discipline', 'Link_Title', 'Link_URL', 'Lab', 'Repository', 'Status', 'Start_Date', 'Outreach']
+  query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM projects'
+  for r in cur.execute(query_statment):
+    project_metadata[r[0]] = r[1:]
 
   with open(outfile, 'w', encoding='utf-8-sig') as f:
-    f.write('\"PROJECT ID\",\"LOCATION\",\"NAMED FEATURE\",\"INVESTIGATOR\"\n')
+    csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+
+    column_titles = ['PROJECT ID','NAME','LOCATION','NAMED FEATURE','INVESTIGATOR','FUNDING','TECHNIQUE','SCIENTIFIC DISCIPLINE','LINK TITLE','LINK URL','LAB','REPOSITORY','STATUS','START DATE','OUTREACH']
+    csvwriter.writerow(column_titles)
 
     for e in sorted(expeditions-set(exclude_projects)):
       l = ','.join(sorted(countries[e])+sorted(states[e]))
       nf = ','.join(sorted(feature_names[e]))
       i = ','.join(pis[e])
 
-      f.write('\"' + e + '\",\"' + l + '\",\"' + nf + '\",\"' + i + '\"\n')
+      aggregated_line = [e, l, nf, i]
+
+      try:
+        aggregated_line = [aggregated_line[0]] + [project_metadata[e][0]] + aggregated_line[1:] + list(project_metadata[e][1:])
+      except KeyError:
+        aggregated_line = [aggregated_line[0]] + [''] + aggregated_line[1:] + ['']*(len(query_columns)-2)
+        print('WARNING: Project {} is not in the projects table in {}.'.format(e,database))
+
+      csvwriter.writerow(aggregated_line)
 
   print('{} projects found.'.format(len(expeditions-set(exclude_projects))))
   print('Aggregated data written to {}.'.format(outfile))
