@@ -25,27 +25,25 @@ import os
 import csv
 
 def aggregate_metadata(database, outfile, **kwargs):
-  if 'exclude_projects' in kwargs:
-    exclude_projects = kwargs['exclude_projects']
-  else:
-    exclude_projects = []
-  
-  if 'debug_projects' in kwargs:
-    debug_projects = kwargs['debug_projects']
-  else:
-    debug_projects = []
+  exclude_projects = kwargs['exclude_projects'] if 'exclude_projects' in kwargs else []
+  debug_projects = kwargs['debug_projects'] if 'debug_projects' in kwargs else []
 
-  conn = sqlite3.connect(database)
-  cur = conn.cursor()
-
+  # Create empty dicts and lists for aggregation
   expeditions = set()
   countries = collections.defaultdict(set)
   states = collections.defaultdict(set)
   feature_names = collections.defaultdict(set)
   pis = collections.defaultdict(list)
+  project_metadata = {}
 
+  # Set up database connection
+  conn = sqlite3.connect(database)
+  cur = conn.cursor()
+
+  # Build dictionaries (key = expedition code) with all countries, states/provinces, location names, and PIs
+  # Most will be sorted alphabetically, but order matters in academia, so it's preserved for PIs 
   for r in cur.execute("SELECT Expedition, Country, State_Province, Location, PI FROM boreholes"):
-    [e, c, s, f, p] = r
+    [e, c, s, l, p] = r
     expeditions.add(e)
 
     if c is not None:
@@ -54,18 +52,17 @@ def aggregate_metadata(database, outfile, **kwargs):
     if s is not None:
       s = s.replace(',','')
       states[e].add(s)
-    if f is not None:
-      f = f.replace(',','')
-      feature_names[e].add(f)
+    if l is not None:
+      l = f.replace(',','')
+      feature_names[e].add(l)
     if p is not None:
       for pi in p.split(', '):
         if pi not in pis[e]:
           pis[e].append(pi)
 
     if e in debug_projects:
-      print('Expedition: {}\nCountry: {}\nState: {}\nFeature Name: {}\nPIs: {}\n'.format(e,c,s,f,p))
+      print('Expedition: {}\nCountry: {}\nState: {}\nFeature Name: {}\nPIs: {}\n'.format(e,c,s,l,p))
   
-  project_metadata = {}
   query_columns = ['Expedition', 'Full_Name', 'Funding', 'Technique', 'Discipline', 'Link_Title', 'Link_URL', 'Lab', 'Repository', 'Status', 'Start_Date', 'Outreach']
   query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM projects'
   for r in cur.execute(query_statment):
@@ -84,11 +81,17 @@ def aggregate_metadata(database, outfile, **kwargs):
 
       aggregated_line = [e, l, nf, i]
 
+      # Not all projects are in the projects table yet, so catch the KeyError if they aren't
+      # Also do some ugly reordering of data because a specific column order is needed for Drupal
       try:
         aggregated_line = [aggregated_line[0]] + [project_metadata[e][0]] + aggregated_line[1:] + list(project_metadata[e][1:])
       except KeyError:
+        # If projects in the borehole table are not in projects table, fill columns with empty strings
         aggregated_line = [aggregated_line[0]] + [''] + aggregated_line[1:] + ['']*(len(query_columns)-2)
         print('WARNING: Project {} is not in the projects table in {}.'.format(e,database))
+
+      if e in debug_projects:
+        print('aggregated_line:',aggregated_line)
 
       csvwriter.writerow(aggregated_line)
 
@@ -117,5 +120,4 @@ if __name__ == '__main__':
 
   start_time = timeit.default_timer()
   aggregate_metadata(args.db_file, outfile, exclude_projects=exclude_projects, debug_projects=debug_projects)
-  end_time = timeit.default_timer()
-  print('Completed in {0} seconds.'.format(round(end_time-start_time,2)))
+  print('Completed in {} seconds.'.format(round(timeit.default_timer()-start_time,2)))
