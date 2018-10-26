@@ -53,7 +53,7 @@ def aggregate_metadata(database, outfile, **kwargs):
       s = s.replace(',','')
       states[e].add(s)
     if l is not None:
-      l = f.replace(',','')
+      l = l.replace(',','')
       feature_names[e].add(l)
     if p is not None:
       for pi in p.split(', '):
