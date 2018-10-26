@@ -61,8 +61,9 @@ def aggregate_metadata(database, outfile, **kwargs):
           pis[e].append(pi)
 
     if e in debug_projects:
-      print('Expedition: {}\nCountry: {}\nState: {}\nFeature Name: {}\nPIs: {}\n'.format(e,c,s,l,p))
+      print('Expedition:\t{}\nCountry:\t{}\nState:\t\t{}\nFeature Name:\t{}\nPIs:\t\t{}\n'.format(e,c,s,l,p))
   
+  # Build dictionary (key = expedition code) for all other associated data
   query_columns = ['Expedition', 'Full_Name', 'Funding', 'Technique', 'Discipline', 'Link_Title', 'Link_URL', 'Lab', 'Repository', 'Status', 'Start_Date', 'Outreach']
   query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM projects'
   for r in cur.execute(query_statment):
@@ -77,11 +78,11 @@ def aggregate_metadata(database, outfile, **kwargs):
     for e in sorted(expeditions-set(exclude_projects)):
       l = ','.join(sorted(countries[e])+sorted(states[e]))
       nf = ','.join(sorted(feature_names[e]))
-      i = ','.join(pis[e])
+      p = ','.join(pis[e])
 
-      aggregated_line = [e, l, nf, i]
+      aggregated_line = [e, l, nf, p]
 
-      # Not all projects are in the projects table yet, so catch the KeyError if they aren't
+      # Can't guarantee all projects will be in the projects table, so catch the KeyError if they aren't
       # Also do some ugly reordering of data because a specific column order is needed for Drupal
       try:
         aggregated_line = [aggregated_line[0]] + [project_metadata[e][0]] + aggregated_line[1:] + list(project_metadata[e][1:])
@@ -91,7 +92,7 @@ def aggregate_metadata(database, outfile, **kwargs):
         print('WARNING: Project {} is not in the projects table in {}.'.format(e,database))
 
       if e in debug_projects:
-        print('aggregated_line:',aggregated_line)
+        print('Full, aggregated data for writing:\n{}\n'.format(aggregated_line))
 
       csvwriter.writerow(aggregated_line)
 
