@@ -37,7 +37,7 @@ def aggregate_metadata(database, outfile, **kwargs):
   project_metadata = {}
 
   # Set up database connection
-  conn = sqlite3.connect(database)
+  conn = sqlite3.connect('file:' + database + '?mode=ro', uri=True)
   cur = conn.cursor()
 
   # Build dictionaries (key = expedition code) with all countries, states/provinces, location names, and PIs
