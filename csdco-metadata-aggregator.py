@@ -14,6 +14,7 @@ INVESTIGATOR        PI
 TODO:
 * Build GUI
 * Command line passing of excluded projects and debug projects
+* Use csv module to cleanup export section a lot?
 '''
 
 import timeit
@@ -22,6 +23,7 @@ import sqlite3
 import collections
 import argparse
 import os
+import csv
 
 def aggregate_metadata(database, outfile, **kwargs):
   if 'exclude_projects' in kwargs:
@@ -64,19 +66,32 @@ def aggregate_metadata(database, outfile, **kwargs):
     if e in debug_projects:
       print('Expedition: {}\nCountry: {}\nState: {}\nFeature Name: {}\nPIs: {}\n'.format(e,c,s,f,p))
   
-  project_data = {}
-  for r in cur.execute("SELECT Expedition, Full_Name, Funding, Technique, Discipline, Link_Title, Link_URL, Lab, Repository, Status, Start_Date, Outreach FROM projects"):
-    project_data[r[0]] = r[1:]
+  project_metadata = {}
+  query_columns = ['Expedition', 'Full_Name', 'Funding', 'Technique', 'Discipline', 'Link_Title', 'Link_URL', 'Lab', 'Repository', 'Status', 'Start_Date', 'Outreach']
+  query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM projects'
+  for r in cur.execute(query_statment):
+    project_metadata[r[0]] = r[1:]
 
   with open(outfile, 'w', encoding='utf-8-sig') as f:
-    f.write('\"PROJECT ID\",\"LOCATION\",\"NAMED FEATURE\",\"INVESTIGATOR\"\n')
+    csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+
+    column_titles = ['PROJECT ID','NAME','LOCATION','NAMED FEATURE','INVESTIGATOR','FUNDING','TECHNIQUE','SCIENTIFIC DISCIPLINE','LINK TITLE','LINK URL','LAB','REPOSITORY','STATUS','START DATE','OUTREACH']
+    csvwriter.writerow(column_titles)
 
     for e in sorted(expeditions-set(exclude_projects)):
       l = ','.join(sorted(countries[e])+sorted(states[e]))
       nf = ','.join(sorted(feature_names[e]))
       i = ','.join(pis[e])
 
-      f.write('\"' + e + '\",\"' + l + '\",\"' + nf + '\",\"' + i + '\"\n')
+      aggregated_line = [e, l, nf, i]
+
+      try:
+        aggregated_line += project_metadata[e]
+      except KeyError:
+        aggregated_line += ['']*(len(query_columns)-1)
+        print('WARNING: Project {} is not in the projects table in {}.'.format(e,database))
+
+      csvwriter.writerow(aggregated_line)
 
   print('{} projects found.'.format(len(expeditions-set(exclude_projects))))
   print('Aggregated data written to {}.'.format(outfile))
