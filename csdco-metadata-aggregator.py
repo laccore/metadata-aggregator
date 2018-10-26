@@ -14,7 +14,6 @@ INVESTIGATOR        PI
 TODO:
 * Build GUI
 * Command line passing of excluded projects and debug projects
-* Use csv module to cleanup export section a lot?
 '''
 
 import timeit
@@ -86,9 +85,9 @@ def aggregate_metadata(database, outfile, **kwargs):
       aggregated_line = [e, l, nf, i]
 
       try:
-        aggregated_line += project_metadata[e]
+        aggregated_line = [aggregated_line[0]] + [project_metadata[e][0]] + aggregated_line[1:] + list(project_metadata[e][1:])
       except KeyError:
-        aggregated_line += ['']*(len(query_columns)-1)
+        aggregated_line = [aggregated_line[0]] + [''] + aggregated_line[1:] + ['']*(len(query_columns)-2)
         print('WARNING: Project {} is not in the projects table in {}.'.format(e,database))
 
       csvwriter.writerow(aggregated_line)
