@@ -34,13 +34,13 @@ def aggregate_metadata(database, outfile, **kwargs):
   states = collections.defaultdict(set)
   feature_names = collections.defaultdict(set)
   pis = collections.defaultdict(list)
-  project_metadata = {}
 
-  # Set up database connection
+  # Set up database connection in uri mode so as to open as read-only
   conn = sqlite3.connect('file:' + database + '?mode=ro', uri=True)
   cur = conn.cursor()
 
   # Build dictionaries (key = expedition code) with all countries, states/provinces, location names, and PIs
+  # There is a many-to-one relationship between boreholes and projects, so need to aggregate data across records
   # Most will be sorted alphabetically, but order matters in academia, so it's preserved for PIs 
   for r in cur.execute("SELECT Expedition, Country, State_Province, Location, PI FROM boreholes"):
     [e, c, s, l, p] = r
@@ -63,6 +63,10 @@ def aggregate_metadata(database, outfile, **kwargs):
     if e in debug_projects:
       print('Expedition:\t{}\nCountry:\t{}\nState:\t\t{}\nFeature Name:\t{}\nPIs:\t\t{}\n'.format(e,c,s,l,p))
   
+  
+  # Empty dict for project metadata. No additional post-processing needed, so comparatively simply setup
+  project_metadata = {}
+
   # Build dictionary (key = expedition code) for all other associated data
   query_columns = ['Expedition', 'Full_Name', 'Funding', 'Technique', 'Discipline', 'Link_Title', 'Link_URL', 'Lab', 'Repository', 'Status', 'Start_Date', 'Outreach']
   query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM projects'
@@ -70,7 +74,7 @@ def aggregate_metadata(database, outfile, **kwargs):
     project_metadata[r[0]] = r[1:]
 
   with open(outfile, 'w', encoding='utf-8-sig') as f:
-    csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+    csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
     column_titles = ['PROJECT ID','NAME','LOCATION','NAMED FEATURE','INVESTIGATOR','FUNDING','TECHNIQUE','SCIENTIFIC DISCIPLINE','LINK TITLE','LINK URL','LAB','REPOSITORY','STATUS','START DATE','OUTREACH']
     csvwriter.writerow(column_titles)
@@ -100,10 +104,31 @@ def aggregate_metadata(database, outfile, **kwargs):
   print('Aggregated data written to {}.'.format(outfile))
 
 
+def export_project_location_data(database, outfile, **kwargs):
+  exclude_projects = kwargs['exclude_projects'] if 'exclude_projects' in kwargs else []
+  debug_projects = kwargs['debug_projects'] if 'debug_projects' in kwargs else []
+
+  conn = sqlite3.connect('file:' + database + '?mode=ro', uri=True)
+  cur = conn.cursor()
+
+  with open(outfile, 'w', encoding='utf-8-sig') as f:
+    csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+    column_titles = ['PROJECT ID','LOCATION','ORIGINAL ID','HOLE ID','DATE','WATER DEPTH','COUNTRY','STATE','COUNTY','LATITUDE','LONGITUDE','ELEVATION','SAMPLE TYPE','DEPTH TOP','DEPTH BOTTOM']
+    csvwriter.writerow(column_titles)
+  
+    for r in cur.execute("SELECT Expedition, Location, Original_ID, Hole_ID, Date, Water_Depth, Country, State_Province, County_Region, Lat, Long, Elevation, Sample_Type, mblf_T, mblf_B FROM boreholes ORDER BY Expedition, Location, Original_ID"):
+      if r[0] not in exclude_projects:
+        csvwriter.writerow(r)
+  
+  print('Project location data written to {}.'.format(outfile))
+
+
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Aggregate fields from the CSDCO database by Expedition for import on our Drupal website.')
   parser.add_argument('db_file', type=str, help='Name of CSDCO database file.')
   parser.add_argument('-f', type=str, help='Filename for export.')
+  parser.add_argument('-l', '--export-location-data', action='store_true', help='Also export the \'project location data\' csv for Drupal import.')
   args = parser.parse_args()
 
   if not os.path.isfile(args.db_file):
@@ -113,6 +138,12 @@ if __name__ == '__main__':
   # Use filename if provided, else create using datetimestamp
   outfile = args.f if args.f else 'project_data_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
 
+  if args.export_location_data:
+    if args.f:
+      outfile_location = args.f.split('.')[:-1] + '_location_' + args.f.split('.')[-1]
+    else:
+      outfile_location = outfile.replace('project_data_','project_location_data_')
+
   # List of projects to exclude from export, e.g., ocean drilling projects
   exclude_projects = ['AT15','ORCA','B0405','B0506','SBB']
     
@@ -121,4 +152,8 @@ if __name__ == '__main__':
 
   start_time = timeit.default_timer()
   aggregate_metadata(args.db_file, outfile, exclude_projects=exclude_projects, debug_projects=debug_projects)
+  
+  if args.export_location_data:
+    export_project_location_data(args.db_file, outfile_location, exclude_projects=exclude_projects)
+  
   print('Completed in {} seconds.'.format(round(timeit.default_timer()-start_time,2)))
