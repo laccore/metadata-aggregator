@@ -61,7 +61,7 @@ def aggregate_metadata(database, outfile, **kwargs):
           pis[e].append(pi)
 
     if e in debug_projects:
-      print('Expedition:\t{}\nCountry:\t{}\nState:\t\t{}\nFeature Name:\t{}\nPIs:\t\t{}\n'.format(e,c,s,l,p))
+      print(f'Expedition:\t{e}\nCountry:\t{c}\nState:\t\t{s}\nFeature Name:\t{l}\nPIs:\t\t{p}\n')
   
   
   # Empty dict for project metadata. No additional post-processing needed, so comparatively simply setup
@@ -93,15 +93,15 @@ def aggregate_metadata(database, outfile, **kwargs):
       except KeyError:
         # If projects in the borehole table are not in projects table, fill columns with empty strings
         aggregated_line = [aggregated_line[0]] + [''] + aggregated_line[1:] + ['']*(len(query_columns)-2)
-        print('WARNING: Project {} is not in the projects table in {}.'.format(e,database))
+        print(f'WARNING: Project {e} is not in the projects table in {database}.')
 
       if e in debug_projects:
-        print('Full, aggregated data for writing:\n{}\n'.format(aggregated_line))
+        print(f'Full, aggregated data for writing:\n{aggregated_line}\n')
 
       csvwriter.writerow(aggregated_line)
 
-  print('{} projects found.'.format(len(expeditions-set(exclude_projects))))
-  print('Aggregated data written to {}.'.format(outfile))
+  print(f'{len(expeditions-set(exclude_projects))} projects found.')
+  print(f'Aggregated data written to {outfile}.')
 
 
 def export_project_location_data(database, outfile, **kwargs):
@@ -121,26 +121,26 @@ def export_project_location_data(database, outfile, **kwargs):
       if r[0] not in exclude_projects:
         csvwriter.writerow(r)
   
-  print('Project location data written to {}.'.format(outfile))
+  print(f'Project location data written to {outfile}.')
 
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Aggregate fields from the CSDCO database by Expedition for import on our Drupal website.')
   parser.add_argument('db_file', type=str, help='Name of CSDCO database file.')
-  parser.add_argument('-f', type=str, help='Filename for export.')
+  parser.add_argument('-f', '--filename', type=str, help='Filename for export.')
   parser.add_argument('-l', '--export-location-data', action='store_true', help='Also export the \'project location data\' csv for Drupal import.')
   args = parser.parse_args()
 
   if not os.path.isfile(args.db_file):
-    print('ERROR: database file \'{}\' does not exist.\n'.format(args.db_file))
+    print(f"ERROR: database file '{args.db_file}' does not exist.")
     exit(1)
 
   # Use filename if provided, else create using datetimestamp
-  outfile = args.f if args.f else 'project_data_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
+  outfile = args.filename if args.filename else 'project_data_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
 
   if args.export_location_data:
-    if args.f:
-      outfile_location = args.f.split('.')[:-1] + '_location_' + args.f.split('.')[-1]
+    if args.filename:
+      outfile_location = args.filename.split('.')[:-1] + '_location_' + args.filename.split('.')[-1]
     else:
       outfile_location = outfile.replace('project_data_','project_location_data_')
 
@@ -156,4 +156,4 @@ if __name__ == '__main__':
   if args.export_location_data:
     export_project_location_data(args.db_file, outfile_location, exclude_projects=exclude_projects)
   
-  print('Completed in {} seconds.'.format(round(timeit.default_timer()-start_time,2)))
+  print(f'Completed in {round(timeit.default_timer()-start_time,2)} seconds.')
