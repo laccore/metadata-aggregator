@@ -127,7 +127,6 @@ def export_project_location_data(database, outfile, **kwargs):
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Aggregate fields from the CSDCO database by Expedition for import on our Drupal website.')
   parser.add_argument('db_file', type=str, help='Name of CSDCO database file.')
-  parser.add_argument('-f', '--filename', type=str, help='Filename for export.')
   parser.add_argument('-l', '--export-location-data', action='store_true', help='Also export the \'project location data\' csv for Drupal import.')
   args = parser.parse_args()
 
