@@ -127,7 +127,6 @@ def export_project_location_data(database, outfile, **kwargs):
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Aggregate fields from the CSDCO database by Expedition for import on our Drupal website.')
   parser.add_argument('db_file', type=str, help='Name of CSDCO database file.')
-  parser.add_argument('-l', '--export-location-data', action='store_true', help='Also export the \'project location data\' csv for Drupal import.')
   args = parser.parse_args()
 
   if not os.path.isfile(args.db_file):
@@ -150,9 +149,8 @@ if __name__ == '__main__':
   debug_projects = []
 
   start_time = timeit.default_timer()
-  aggregate_metadata(args.db_file, outfile, exclude_projects=exclude_projects, debug_projects=debug_projects)
   
-  if args.export_location_data:
-    export_project_location_data(args.db_file, outfile_location, exclude_projects=exclude_projects)
+  aggregate_metadata(args.db_file, outfile, exclude_projects=exclude_projects, debug_projects=debug_projects)
+  export_project_location_data(args.db_file, outfile_location, exclude_projects=exclude_projects)
   
   print(f'Completed in {round(timeit.default_timer()-start_time,2)} seconds.')
