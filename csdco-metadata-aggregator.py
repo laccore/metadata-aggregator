@@ -68,7 +68,18 @@ def aggregate_metadata(database, outfile, **kwargs):
   project_metadata = {}
 
   # Build dictionary (key = expedition code) for all other associated data
-  query_columns = ['Expedition', 'Full_Name', 'Funding', 'Technique', 'Discipline', 'Link_Title', 'Link_URL', 'Lab', 'Repository', 'Status', 'Start_Date', 'Outreach']
+  query_columns =  ['Expedition',
+                    'Full_Name',
+                    'Funding',
+                    'Technique',
+                    'Discipline',
+                    'Link_Title',
+                    'Link_URL',
+                    'Lab',
+                    'Repository',
+                    'Status',
+                    'Start_Date',
+                    'Outreach']
   query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM projects'
   for r in cur.execute(query_statment):
     project_metadata[r[0]] = r[1:]
@@ -76,7 +87,21 @@ def aggregate_metadata(database, outfile, **kwargs):
   with open(outfile, 'w', encoding='utf-8-sig') as f:
     csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-    column_titles = ['PROJECT ID','NAME','LOCATION','NAMED FEATURE','INVESTIGATOR','FUNDING','TECHNIQUE','SCIENTIFIC DISCIPLINE','LINK TITLE','LINK URL','LAB','REPOSITORY','STATUS','START DATE','OUTREACH']
+    column_titles =  ['PROJECT ID',
+                      'NAME',
+                      'LOCATION',
+                      'NAMED FEATURE',
+                      'INVESTIGATOR',
+                      'FUNDING',
+                      'TECHNIQUE',
+                      'SCIENTIFIC DISCIPLINE',
+                      'LINK TITLE',
+                      'LINK URL',
+                      'LAB',
+                      'REPOSITORY',
+                      'STATUS',
+                      'START DATE',
+                      'OUTREACH']
     csvwriter.writerow(column_titles)
 
     for e in sorted(expeditions-set(exclude_projects)):
@@ -106,7 +131,7 @@ def aggregate_metadata(database, outfile, **kwargs):
 
 def export_project_location_data(database, outfile, **kwargs):
   exclude_projects = kwargs['exclude_projects'] if 'exclude_projects' in kwargs else []
-  debug_projects = kwargs['debug_projects'] if 'debug_projects' in kwargs else []
+  # debug_projects = kwargs['debug_projects'] if 'debug_projects' in kwargs else []
 
   conn = sqlite3.connect('file:' + database + '?mode=ro', uri=True)
   cur = conn.cursor()
@@ -114,10 +139,40 @@ def export_project_location_data(database, outfile, **kwargs):
   with open(outfile, 'w', encoding='utf-8-sig') as f:
     csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-    column_titles = ['PROJECT ID','LOCATION','ORIGINAL ID','HOLE ID','DATE','WATER DEPTH','COUNTRY','STATE','COUNTY','LATITUDE','LONGITUDE','ELEVATION','SAMPLE TYPE','DEPTH TOP','DEPTH BOTTOM']
+    column_titles =  ['PROJECT ID','LOCATION',
+                      'ORIGINAL ID',
+                      'HOLE ID',
+                      'DATE',
+                      'WATER DEPTH',
+                      'COUNTRY',
+                      'STATE',
+                      'COUNTY',
+                      'LATITUDE',
+                      'LONGITUDE',
+                      'ELEVATION',
+                      'SAMPLE TYPE',
+                      'DEPTH TOP',
+                      'DEPTH BOTTOM']
     csvwriter.writerow(column_titles)
+
+    query_columns =  ['Expedition',
+                      'Location',
+                      'Original_ID',
+                      'Hole_ID',
+                      'Date',
+                      'Water_Depth',
+                      'Country',
+                      'State_Province',
+                      'County_Region',
+                      'Lat',
+                      'Long',
+                      'Elevation',
+                      'Sample_Type',
+                      'mblf_T',
+                      'mblf_B']
+    query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM boreholes ORDER BY Expedition, Location, Original_ID'
   
-    for r in cur.execute("SELECT Expedition, Location, Original_ID, Hole_ID, Date, Water_Depth, Country, State_Province, County_Region, Lat, Long, Elevation, Sample_Type, mblf_T, mblf_B FROM boreholes ORDER BY Expedition, Location, Original_ID"):
+    for r in cur.execute(query_statment):
       if r[0] not in exclude_projects:
         csvwriter.writerow(r)
   
@@ -134,13 +189,8 @@ if __name__ == '__main__':
     exit(1)
 
   # Use filename if provided, else create using datetimestamp
-  outfile = args.filename if args.filename else 'project_data_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
-
-  if args.export_location_data:
-    if args.filename:
-      outfile_location = args.filename.split('.')[:-1] + '_location_' + args.filename.split('.')[-1]
-    else:
-      outfile_location = outfile.replace('project_data_','project_location_data_')
+  outfile = 'project_data_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
+  outfile_location = outfile.replace('project_data_','project_location_data_')
 
   # List of projects to exclude from export, e.g., ocean drilling projects
   exclude_projects = ['AT15','ORCA','B0405','B0506','SBB']
@@ -149,7 +199,7 @@ if __name__ == '__main__':
   debug_projects = []
 
   start_time = timeit.default_timer()
-  
+
   aggregate_metadata(args.db_file, outfile, exclude_projects=exclude_projects, debug_projects=debug_projects)
   export_project_location_data(args.db_file, outfile_location, exclude_projects=exclude_projects)
   
