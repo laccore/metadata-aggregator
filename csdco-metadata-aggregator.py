@@ -124,6 +124,8 @@ def aggregate_metadata(database, outfile, **kwargs):
         print(f'Full, aggregated data for writing:\n{aggregated_line}\n')
 
       csvwriter.writerow(aggregated_line)
+  
+  conn.close()
 
   print(f'{len(expeditions-set(exclude_projects))} projects found.')
   print(f'Aggregated data written to {outfile}.')
@@ -175,6 +177,8 @@ def export_project_location_data(database, outfile, **kwargs):
     for r in cur.execute(query_statment):
       if r[0] not in exclude_projects:
         csvwriter.writerow(r)
+    
+  conn.close()
   
   print(f'Project location data written to {outfile}.')
 
