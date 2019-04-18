@@ -68,18 +68,9 @@ def aggregate_metadata(database, outfile, **kwargs):
   project_metadata = {}
 
   # Build dictionary (key = expedition code) for all other associated data
-  query_columns =  ['Expedition',
-                    'Full_Name',
-                    'Funding',
-                    'Technique',
-                    'Discipline',
-                    'Link_Title',
-                    'Link_URL',
-                    'Lab',
-                    'Repository',
-                    'Status',
-                    'Start_Date',
-                    'Outreach']
+  query_columns = ['Expedition', 'Full_Name', 'Funding', 'Technique',
+                   'Discipline', 'Link_Title', 'Link_URL', 'Lab',
+                   'Repository', 'Status', 'Start_Date', 'Outreach']
   query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM projects'
   for r in cur.execute(query_statment):
     project_metadata[r[0]] = r[1:]
@@ -87,21 +78,9 @@ def aggregate_metadata(database, outfile, **kwargs):
   with open(outfile, 'w', encoding='utf-8-sig') as f:
     csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-    column_titles =  ['PROJECT ID',
-                      'NAME',
-                      'LOCATION',
-                      'NAMED FEATURE',
-                      'INVESTIGATOR',
-                      'FUNDING',
-                      'TECHNIQUE',
-                      'SCIENTIFIC DISCIPLINE',
-                      'LINK TITLE',
-                      'LINK URL',
-                      'LAB',
-                      'REPOSITORY',
-                      'STATUS',
-                      'START DATE',
-                      'OUTREACH']
+    column_titles = ['PROJECT ID', 'NAME', 'LOCATION', 'NAMED FEATURE', 'INVESTIGATOR',
+                     'FUNDING', 'TECHNIQUE', 'SCIENTIFIC DISCIPLINE', 'LINK TITLE',
+                     'LINK URL', 'LAB', 'REPOSITORY', 'STATUS', 'START DATE', 'OUTREACH']
     csvwriter.writerow(column_titles)
 
     for e in sorted(expeditions-set(exclude_projects)):
@@ -141,37 +120,14 @@ def export_project_location_data(database, outfile, **kwargs):
   with open(outfile, 'w', encoding='utf-8-sig') as f:
     csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-    column_titles =  ['PROJECT ID','LOCATION',
-                      'ORIGINAL ID',
-                      'HOLE ID',
-                      'DATE',
-                      'WATER DEPTH',
-                      'COUNTRY',
-                      'STATE',
-                      'COUNTY',
-                      'LATITUDE',
-                      'LONGITUDE',
-                      'ELEVATION',
-                      'SAMPLE TYPE',
-                      'DEPTH TOP',
-                      'DEPTH BOTTOM']
+    column_titles = ['PROJECT ID','LOCATION', 'ORIGINAL ID', 'HOLE ID', 'DATE', 
+                     'WATER DEPTH', 'COUNTRY', 'STATE', 'COUNTY', 'LATITUDE', 
+                     'LONGITUDE', 'ELEVATION', 'SAMPLE TYPE', 'DEPTH TOP', 'DEPTH BOTTOM']
     csvwriter.writerow(column_titles)
 
-    query_columns =  ['Expedition',
-                      'Location',
-                      'Original_ID',
-                      'Hole_ID',
-                      'Date',
-                      'Water_Depth',
-                      'Country',
-                      'State_Province',
-                      'County_Region',
-                      'Lat',
-                      'Long',
-                      'Elevation',
-                      'Sample_Type',
-                      'mblf_T',
-                      'mblf_B']
+    query_columns = ['Expedition', 'Location', 'Original_ID', 'Hole_ID', 'Date', 
+                     'Water_Depth', 'Country', 'State_Province', 'County_Region', 
+                     'Lat', 'Long', 'Elevation', 'Sample_Type', 'mblf_T', 'mblf_B']
     query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM boreholes ORDER BY Expedition, Location, Original_ID'
   
     for r in cur.execute(query_statment):
