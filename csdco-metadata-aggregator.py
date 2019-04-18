@@ -112,7 +112,8 @@ def aggregate_metadata(database, outfile, **kwargs):
 
 def export_project_location_data(database, outfile, **kwargs):
   exclude_projects = kwargs['exclude_projects'] if 'exclude_projects' in kwargs else []
-  # debug_projects = kwargs['debug_projects'] if 'debug_projects' in kwargs else []
+  debug_projects = kwargs['debug_projects'] if 'debug_projects' in kwargs else []
+  print(debug_projects)
 
   conn = sqlite3.connect('file:' + database + '?mode=ro', uri=True)
   cur = conn.cursor()
@@ -133,6 +134,8 @@ def export_project_location_data(database, outfile, **kwargs):
     for r in cur.execute(query_statment):
       if r[0] not in exclude_projects:
         csvwriter.writerow(r)
+      if r[0] in debug_projects:
+        print(f'Metadata information for {r[0]}:\n{r}')
     
   conn.close()
   
@@ -161,6 +164,6 @@ if __name__ == '__main__':
   start_time = timeit.default_timer()
 
   aggregate_metadata(args.db_file, outfile, exclude_projects=exclude_projects, debug_projects=debug_projects)
-  export_project_location_data(args.db_file, outfile_location, exclude_projects=exclude_projects)
+  export_project_location_data(args.db_file, outfile_location, exclude_projects=exclude_projects, debug_projects=debug_projects)
   
   print(f'Completed in {round(timeit.default_timer()-start_time,2)} seconds.')
