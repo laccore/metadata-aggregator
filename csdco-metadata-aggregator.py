@@ -106,8 +106,10 @@ def aggregate_metadata(database, outfile, **kwargs):
 
       csvwriter.writerow(aggregated_line)
     
-    for e in no_borehole_info:
-      aggregated_line = [e] + [project_metadata[e][0]] + ['']*3 + list(project_metadata[e][1:])
+    # Include projects that don't have information from the borehole table. In this case, leave
+    # location and named feature fields empty, but pull PI info from projects table also.
+    for e in sorted(list(no_borehole_info)):
+      aggregated_line = [e] + [project_metadata[e][0]] + ['']*2 + [project_metadata[e][-1]] + list(project_metadata[e][1:-1])
       csvwriter.writerow(aggregated_line)
 
   conn.close()
