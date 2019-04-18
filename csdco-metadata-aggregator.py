@@ -119,7 +119,6 @@ def aggregate_metadata(database, outfile, **kwargs):
 def export_project_location_data(database, outfile, **kwargs):
   exclude_projects = kwargs['exclude_projects'] if 'exclude_projects' in kwargs else []
   debug_projects = kwargs['debug_projects'] if 'debug_projects' in kwargs else []
-  print(debug_projects)
 
   conn = sqlite3.connect('file:' + database + '?mode=ro', uri=True)
   cur = conn.cursor()
