@@ -153,16 +153,25 @@ def export_project_location_data(database, outfile, **kwargs):
 @Gooey(program_name='CSDCO Metadata Aggregator')
 def main():
   parser = GooeyParser(description='Aggregate fields from the CSDCO database by Expedition for Drupal import.')
-  parser.add_argument('database_file', widget='FileChooser', metavar='CSDCO Database File', help='Path of the CSDCO database file.')
+  input_output = parser.add_argument_group(gooey_options={'columns': 1})
+  input_output.add_argument('database_file', widget='FileChooser', metavar='CSDCO Database File', help='Path of the CSDCO database file.')
+  input_output.add_argument('output_directory', widget='DirChooser', metavar='Save Path', help='Where to save output files.')
   args = parser.parse_args()
 
   if not os.path.isfile(args.database_file):
     print(f"ERROR: database file '{args.database_file}' does not exist.")
     exit(1)
-
+  
+  if not os.path.isdir(args.output_directory):
+    print(f"ERROR: output folder '{args.output_directory}' does not exist.")
+    exit(1)
+  
   # Use filename if provided, else create using datetimestamp
   outfile = 'project_data_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
+  outfile = os.path.join(args.output_directory, outfile)
+
   outfile_location = outfile.replace('project_data_','project_location_data_')
+  outfile_location = os.path.join(args.output_directory, outfile_location)
 
   # List of projects to exclude from export, e.g., ocean drilling projects
   exclude_projects = ['AT15','ORCA','B0405','B0506','SBB']
