@@ -68,12 +68,14 @@ def aggregate_metadata(database, outfile, **kwargs):
   project_metadata = {}
 
   # Build dictionary (key = expedition code) for all other associated data
-  query_columns = ['Expedition', 'Full_Name', 'Funding', 'Technique',
-                   'Discipline', 'Link_Title', 'Link_URL', 'Lab',
-                   'Repository', 'Status', 'Start_Date', 'Outreach']
+  query_columns = ['Expedition', 'Full_Name', 'Funding', 'Technique', 'Discipline', 
+                   'Link_Title', 'Link_URL', 'Lab', 'Repository', 'Status', 
+                   'Start_Date', 'Outreach', 'Investigators']
   query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM projects'
   for r in cur.execute(query_statment):
     project_metadata[r[0]] = r[1:]
+  
+  no_borehole_info = set(project_metadata.keys())-expeditions
 
   with open(outfile, 'w', encoding='utf-8-sig') as f:
     csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -93,7 +95,7 @@ def aggregate_metadata(database, outfile, **kwargs):
       # Can't guarantee all projects will be in the projects table, so catch the KeyError if they aren't
       # Also do some ugly reordering of data because a specific column order is needed for Drupal
       try:
-        aggregated_line = [aggregated_line[0]] + [project_metadata[e][0]] + aggregated_line[1:] + list(project_metadata[e][1:])
+        aggregated_line = [aggregated_line[0]] + [project_metadata[e][0]] + aggregated_line[1:] + list(project_metadata[e][1:-1])
       except KeyError:
         # If projects in the borehole table are not in projects table, fill columns with empty strings
         aggregated_line = [aggregated_line[0]] + [''] + aggregated_line[1:] + ['']*(len(query_columns)-2)
@@ -103,7 +105,13 @@ def aggregate_metadata(database, outfile, **kwargs):
         print(f'Full, aggregated data for writing:\n{aggregated_line}\n')
 
       csvwriter.writerow(aggregated_line)
-  
+    
+    # Include projects that don't have information from the borehole table. In this case, leave
+    # location and named feature fields empty, but pull PI info from projects table also.
+    for e in sorted(list(no_borehole_info)):
+      aggregated_line = [e] + [project_metadata[e][0]] + ['']*2 + [project_metadata[e][-1]] + list(project_metadata[e][1:-1])
+      csvwriter.writerow(aggregated_line)
+
   conn.close()
 
   print(f'{len(expeditions-set(exclude_projects))} projects found.')
@@ -113,7 +121,6 @@ def aggregate_metadata(database, outfile, **kwargs):
 def export_project_location_data(database, outfile, **kwargs):
   exclude_projects = kwargs['exclude_projects'] if 'exclude_projects' in kwargs else []
   debug_projects = kwargs['debug_projects'] if 'debug_projects' in kwargs else []
-  print(debug_projects)
 
   conn = sqlite3.connect('file:' + database + '?mode=ro', uri=True)
   cur = conn.cursor()
