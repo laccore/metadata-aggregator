@@ -20,7 +20,6 @@ import timeit
 import datetime
 import sqlite3
 import collections
-import argparse
 import os
 import csv
 from gooey import Gooey, GooeyParser
