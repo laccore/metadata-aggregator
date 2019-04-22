@@ -61,7 +61,7 @@ def aggregate_metadata(database, outfile, **kwargs):
           pis[e].append(pi)
 
     if e in debug_projects:
-      print(f'Expedition:\t{e}\nCountry:\t{c}\nState:\t\t{s}\nFeature Name:\t{l}\nPIs:\t\t{p}\n')
+      print(f'Expedition:\t{e}\nCountry:\t{c}\nState:\t\t{s}\nFeature Name:\t{l}\nPIs:\t\t{p}\n', flush=True)
   
   
   # Empty dict for project metadata. No additional post-processing needed, so comparatively simply setup
@@ -99,10 +99,10 @@ def aggregate_metadata(database, outfile, **kwargs):
       except KeyError:
         # If projects in the borehole table are not in projects table, fill columns with empty strings
         aggregated_line = [aggregated_line[0]] + [''] + aggregated_line[1:] + ['']*(len(query_columns)-2)
-        print(f'WARNING: Project {e} is not in the projects table in {database}.')
+        print(f'WARNING: Project {e} is not in the projects table in {database}.', flush=True)
 
       if e in debug_projects:
-        print(f'Full, aggregated data for writing:\n{aggregated_line}\n')
+        print(f'Full, aggregated data for writing:\n{aggregated_line}\n', flush=True)
 
       csvwriter.writerow(aggregated_line)
     
@@ -114,8 +114,8 @@ def aggregate_metadata(database, outfile, **kwargs):
 
   conn.close()
 
-  print(f'{len(expeditions-set(exclude_projects))} projects found.')
-  print(f'Aggregated data written to {outfile}.')
+  print(f'{len(expeditions-set(exclude_projects))} projects found.', flush=True)
+  print(f'Aggregated data written to {outfile}.', flush=True)
 
 
 def export_project_location_data(database, outfile, **kwargs):
@@ -142,11 +142,11 @@ def export_project_location_data(database, outfile, **kwargs):
       if r[0] not in exclude_projects:
         csvwriter.writerow(r)
       if r[0] in debug_projects:
-        print(f'Metadata information for {r[0]}:\n{r}')
+        print(f'Metadata information for {r[0]}:\n{r}', flush=True)
     
   conn.close()
   
-  print(f'Project location data written to {outfile}.')
+  print(f'Project location data written to {outfile}.', flush=True)
 
 
 @Gooey(program_name='CSDCO Metadata Aggregator')
@@ -158,11 +158,11 @@ def main():
   args = parser.parse_args()
 
   if not os.path.isfile(args.database_file):
-    print(f"ERROR: database file '{args.database_file}' does not exist.")
+    print(f"ERROR: database file '{args.database_file}' does not exist.", flush=True)
     exit(1)
   
   if not os.path.isdir(args.output_directory):
-    print(f"ERROR: output folder '{args.output_directory}' does not exist.")
+    print(f"ERROR: output folder '{args.output_directory}' does not exist.", flush=True)
     exit(1)
   
   # Use filename if provided, else create using datetimestamp
@@ -183,7 +183,7 @@ def main():
   aggregate_metadata(args.database_file, outfile, exclude_projects=exclude_projects, debug_projects=debug_projects)
   export_project_location_data(args.database_file, outfile_location, exclude_projects=exclude_projects, debug_projects=debug_projects)
   
-  print(f'Completed in {round(timeit.default_timer()-start_time,2)} seconds.')
+  print(f'Completed in {round(timeit.default_timer()-start_time,2)} seconds.', flush=True)
 
 
 if __name__ == '__main__':
