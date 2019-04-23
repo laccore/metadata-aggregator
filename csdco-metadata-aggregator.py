@@ -71,9 +71,11 @@ def aggregate_metadata(database, outfile, **kwargs):
   query_columns = ['Expedition', 'Full_Name', 'Funding', 'Technique', 'Discipline', 
                    'Link_Title', 'Link_URL', 'Lab', 'Repository', 'Status', 
                    'Start_Date', 'Outreach', 'Investigators']
-  query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM projects'
+  query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM projects ORDER BY Expedition'
   for r in cur.execute(query_statment):
     project_metadata[r[0]] = r[1:]
+  
+  conn.close()
   
   no_borehole_info = set(project_metadata.keys())-expeditions
 
@@ -112,8 +114,6 @@ def aggregate_metadata(database, outfile, **kwargs):
       aggregated_line = [e] + [project_metadata[e][0]] + ['']*2 + [project_metadata[e][-1]] + list(project_metadata[e][1:-1])
       csvwriter.writerow(aggregated_line)
 
-  conn.close()
-
   print(f'{len(expeditions-set(exclude_projects))} projects found.', flush=True)
   print(f'Aggregated data written to {outfile}.', flush=True)
 
@@ -136,7 +136,7 @@ def export_project_location_data(database, outfile, **kwargs):
     query_columns = ['Expedition', 'Location', 'Original_ID', 'Hole_ID', 'Date', 
                      'Water_Depth', 'Country', 'State_Province', 'County_Region', 
                      'Lat', 'Long', 'Elevation', 'Sample_Type', 'mblf_T', 'mblf_B']
-    query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM boreholes ORDER BY Expedition, Location, Original_ID'
+    query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM boreholes ORDER BY Expedition, Location, Original_ID ORDER BY Expedition'
   
     for r in cur.execute(query_statment):
       if r[0] not in exclude_projects:
