@@ -151,9 +151,25 @@ def export_project_location_data(database, outfile, **kwargs):
 
 @Gooey(program_name='CSDCO Metadata Aggregator')
 def main():
+
+  default_path = ''
+  potential_paths = [
+    '/Volumes/CSDCO/Vault/projects/!inventory/CSDCO.sqlite3',
+    'Z:/projects/!inventory/CSDCO.sqlite3',
+    'Y:/projects/!inventory/CSDCO.sqlite3',
+    'Z:/Vault/projects/!inventory/CSDCO.sqlite3',
+    'Y:/Vault/projects/!inventory/CSDCO.sqlite3'
+  ]
+
+  for path in potential_paths:
+    if os.path.isfile(path):
+      default_path = path
+      print(f"Found CSDCO database at '{path}'.")
+      break
+
   parser = GooeyParser(description='Aggregate fields from the CSDCO database by Expedition for Drupal import.')
   input_output = parser.add_argument_group(gooey_options={'columns': 1})
-  input_output.add_argument('database_file', widget='FileChooser', metavar='CSDCO Database File', help='Path of the CSDCO database file.')
+  input_output.add_argument('database_file', widget='FileChooser', metavar='CSDCO Database File', default=default_path, help='Path of the CSDCO database file.')
   input_output.add_argument('output_directory', widget='DirChooser', metavar='Save Path', help='Where to save output files.')
   args = parser.parse_args()
 
