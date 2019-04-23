@@ -169,8 +169,15 @@ def main():
 
   parser = GooeyParser(description='Aggregate fields from the CSDCO database by Expedition for Drupal import.')
   input_output = parser.add_argument_group(gooey_options={'columns': 1})
-  input_output.add_argument('database_file', widget='FileChooser', metavar='CSDCO Database File', default=default_path, help='Path of the CSDCO database file.')
-  input_output.add_argument('output_directory', widget='DirChooser', metavar='Save Path', help='Where to save output files.')
+  input_output.add_argument('database_file',
+                            widget='FileChooser',
+                            metavar='CSDCO Database File',
+                            default=default_path,
+                            help='Path of the CSDCO database file.')
+  input_output.add_argument('output_directory',
+                            widget='DirChooser',
+                            metavar='Save Path',
+                            help='Where to save output files.')
   args = parser.parse_args()
 
   if not os.path.isfile(args.database_file):
