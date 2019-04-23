@@ -136,7 +136,7 @@ def export_project_location_data(database, outfile, **kwargs):
     query_columns = ['Expedition', 'Location', 'Original_ID', 'Hole_ID', 'Date', 
                      'Water_Depth', 'Country', 'State_Province', 'County_Region', 
                      'Lat', 'Long', 'Elevation', 'Sample_Type', 'mblf_T', 'mblf_B']
-    query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM boreholes ORDER BY Expedition, Location, Original_ID ORDER BY Expedition'
+    query_statment = 'SELECT ' + ', '.join(query_columns) + ' FROM boreholes ORDER BY Expedition, Location, Original_ID'
   
     for r in cur.execute(query_statment):
       if r[0] not in exclude_projects:
