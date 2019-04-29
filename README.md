@@ -4,11 +4,6 @@ This script takes information from the CSDCO SQLite database and aggregates data
 
 It has one required input, the path to the sqlite database, and files are exported to the same directory the script is run from.
 
-## Example usage
-```python
-python csdco-metadata-aggregator.py /path/to/csdco_database.sqlite3
-```
-
 ## Aggregation
 ### Project Data
 All data is aggregated based on the Expedition code (**PROJECT ID** in the output file). Location, named features, and PIs are pulled from various columns in the ```boreholes``` table, where there are many rows (boreholes) for a given project.
@@ -22,3 +17,6 @@ This data is then joined (key = Expedition) with data from the ```projects``` ta
 Location data (latitude, longitude, elevation), alongside lots of other project metadata, is used to generate maps and fill in informational tables that live alongside project information on Drupal.
 
 The data is pulled from the ```projects``` table and exported with renamed column titles (that Drupal expects).
+
+## Screenshot/usage
+<img src="https://user-images.githubusercontent.com/6476269/56609227-2df3ca00-65d2-11e9-9b41-e629dc8bb4c0.png" width="80%" alt="Screenshot of the CSDCO Metadata Aggregator" />
