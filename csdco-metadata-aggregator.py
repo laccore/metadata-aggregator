@@ -189,10 +189,10 @@ def main():
     exit(1)
   
   # Use filename if provided, else create using datetimestamp
-  outfile = 'project_data_' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv'
+  outfile = 'projects_' + datetime.datetime.now().strftime('%Y%m%d') + '.csv'
   outfile = os.path.join(args.output_directory, outfile)
 
-  outfile_location = outfile.replace('project_data_','project_location_data_')
+  outfile_location = outfile.replace('projects_','project_locations_')
   outfile_location = os.path.join(args.output_directory, outfile_location)
 
   # List of projects to exclude from export, e.g., ocean drilling projects
